@@ -1,0 +1,100 @@
+#!/bin/bash
+
+## Author: Denis Bell
+## Simple BASH program to execute stored commands. 
+
+
+#File containing commands
+COMMAND_FILE=$1
+
+#Colours used for highlighting text
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+#Arrow up code
+ARROW_UP='\[A'
+
+#Arrow down code
+ARROW_DOWN='\[B'
+
+#Enter button code 
+ENTER=""
+
+SUCCESS=0
+
+#Line counter
+LINE_COUNTER=1
+
+#Currenly selected line number
+SELECTED_LINE=1
+
+#Selected command
+SELECTED_COMMAND=""
+
+#Maximum line number
+MAX_LINE_NUMBER=$(cat $COMMAND_FILE | wc -l)
+
+#Minimum line number
+MINIMUM_LINE_NUMBER=1
+
+
+while true
+do
+	
+	#Check if character code detected.
+	echo -n $key | grep $ARROW_UP 
+	
+	if [ $? -eq $SUCCESS ]
+	then
+               SELECTED_LINE=$(($SELECTED_LINE - 1))		
+	fi
+		
+        #Check if character code detected.	
+	echo -n $key | grep $ARROW_DOWN 
+	if [ $? -eq $SUCCESS ]
+	then	
+		
+               SELECTED_LINE=$(($SELECTED_LINE + 1))		
+	fi
+		
+	#If enter key is pressed
+	if [[ $key = "" ]]
+	then
+		clear	
+		bash -c "$SELECTED_COMMAND"
+	fi
+	
+	LINE_COUNTER=1
+
+	if [ $SELECTED_LINE -ge $MAX_LINE_NUMBER ]
+	then
+
+		SELECTED_LINE=$MAX_LINE_NUMBER
+
+	elif [ $SELECTED_LINE -lt $MINIMUM_LINE_NUMBER ]
+        then		
+		SELECTED_LINE=$MINIMUM_LINE_NUMBER	
+	fi	
+			
+	
+	clear
+	
+	while IFS='' read -r line || [[ -n "$line" ]]; do
+		
+		if [ $LINE_COUNTER -eq $SELECTED_LINE ]
+		then
+			printf "${RED}%d %s\n${NC}" \
+			"$LINE_COUNTER" "$line"					
+			SELECTED_COMMAND=$line
+		else	
+			printf "%d %s\n" "$LINE_COUNTER" "$line"
+   		fi
+	    	
+		LINE_COUNTER=$(($LINE_COUNTER + 1))
+	
+	done < "$COMMAND_FILE"
+
+	printf "Selected line: %d Go Up %s Go Down %s" $SELECTED_LINE 
+        read -n3 key
+	
+done

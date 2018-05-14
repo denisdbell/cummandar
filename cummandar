@@ -7,6 +7,9 @@
 #File containing commands
 COMMAND_FILE=$1
 
+#Function
+FUNCTION=$2
+
 #Colours used for highlighting text
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -31,70 +34,96 @@ SELECTED_LINE=1
 #Selected command
 SELECTED_COMMAND=""
 
-#Maximum line number
-MAX_LINE_NUMBER=$(cat $COMMAND_FILE | wc -l)
-
 #Minimum line number
 MINIMUM_LINE_NUMBER=1
 
+#Check if file exists
+if [ ! -f "$COMMAND_FILE" ]
+then
+	printf "The file \"%s\" does not exist" $COMMAND_FILE
 
-while true
-do
+	exit 1
+fi
+
+#Maximum line number
+MAX_LINE_NUMBER=$(cat $COMMAND_FILE | wc -l)
+
+main_view () {
+
+	while true
+	do
 	
-	#Check if character code detected.
-	echo -n $key | grep $ARROW_UP 
+		#Check if character code detected.
+		echo -n $key | grep $ARROW_UP 
 	
-	if [ $? -eq $SUCCESS ]
-	then
-               SELECTED_LINE=$(($SELECTED_LINE - 1))		
-	fi
+		if [ $? -eq $SUCCESS ]
+		then
+               		SELECTED_LINE=$(($SELECTED_LINE - 1))		
+		fi
 		
-        #Check if character code detected.	
-	echo -n $key | grep $ARROW_DOWN 
-	if [ $? -eq $SUCCESS ]
-	then	
+       		 #Check if character code detected.	
+		echo -n $key | grep $ARROW_DOWN 
+		if [ $? -eq $SUCCESS ]
+		then	
+			
+               		SELECTED_LINE=$(($SELECTED_LINE + 1))		
+		fi
 		
-               SELECTED_LINE=$(($SELECTED_LINE + 1))		
-	fi
-		
-	#If enter key is pressed
-	if [[ $key = "" ]]
-	then
-		clear	
-		bash -c "$SELECTED_COMMAND"
-	fi
+		#If enter key is pressed
+		if [[ $key = "" ]]
+		then
+			clear	
+			bash -c "$SELECTED_COMMAND"
+		fi
 	
-	LINE_COUNTER=1
+		LINE_COUNTER=1
 
-	if [ $SELECTED_LINE -ge $MAX_LINE_NUMBER ]
-	then
+		if [ $SELECTED_LINE -ge $MAX_LINE_NUMBER ]
+		then
+		
+			SELECTED_LINE=$MAX_LINE_NUMBER
 
-		SELECTED_LINE=$MAX_LINE_NUMBER
-
-	elif [ $SELECTED_LINE -lt $MINIMUM_LINE_NUMBER ]
-        then		
-		SELECTED_LINE=$MINIMUM_LINE_NUMBER	
-	fi	
+		elif [ $SELECTED_LINE -lt $MINIMUM_LINE_NUMBER ]
+       	 	then		
+			SELECTED_LINE=$MINIMUM_LINE_NUMBER	
+		fi	
 			
 	
-	clear
+		clear
 	
-	while IFS='' read -r line || [[ -n "$line" ]]; do
+		while IFS='' read -r line || [[ -n "$line" ]]; do
 		
-		if [ $LINE_COUNTER -eq $SELECTED_LINE ]
-		then
-			printf "${RED}%d %s\n${NC}" \
-			"$LINE_COUNTER" "$line"					
-			SELECTED_COMMAND=$line
-		else	
-			printf "%d %s\n" "$LINE_COUNTER" "$line"
-   		fi
+			if [ $LINE_COUNTER -eq $SELECTED_LINE ]
+			then
+				printf "${RED}%d %s\n${NC}" \
+				"$LINE_COUNTER" "$line"					
+				SELECTED_COMMAND=$line
+			else	
+				printf "%d %s\n" "$LINE_COUNTER" "$line"
+	   		fi
 	    	
-		LINE_COUNTER=$(($LINE_COUNTER + 1))
+			LINE_COUNTER=$(($LINE_COUNTER + 1))
 	
-	done < "$COMMAND_FILE"
+		done < "$COMMAND_FILE"
 
-	printf "Selected line: %d Go Up %s Go Down %s" $SELECTED_LINE 
-        read -n3 key
+		printf "Selected line: %d Go Up %s Go Down %s" $SELECTED_LINE 
+        	read -n3 key
 	
-done
+	done
+}
+
+
+#Add command to file
+if [[ $FUNCTION = "a"  ]] && [ ! -z "$3" ] 
+then
+        echo "$3" >> $COMMAND_FILE
+
+        main_view
+fi
+
+#Open in command file in vim for editing
+if [[ $FUNCTION = "v" ]]
+then
+	vim $COMMAND_FILE		
+
+fi

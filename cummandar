@@ -1,8 +1,8 @@
 #!/bin/bash
-
-## Author: denis bell
-## simple bash program to execute stored commands. 
-
+############################################################
+#####:: Author: Denis Bell <denisdbell@gmail.com>       ####
+#####:: simple bash program to execute stored commands. ####
+############################################################
 
 #file containing commands
 command_file=$1
@@ -12,7 +12,8 @@ command_file=$1
 function=$2
 
 #colours used for highlighting text
-red='\033[0;31m'
+yellow='\033[0;93m'
+red='\033[0;101m'
 nc='\033[0m' # no color
 
 #arrow up code
@@ -83,6 +84,10 @@ main_view () {
     
     clear
 	
+    printf "${yellow}***************************************\n"	
+    printf "******* A Total of %d Commands ********\n" "$max_line_number" 
+    printf "***************************************${nc}\n\n"
+    	
     while IFS='' read -r line || [[ -n "$line" ]]; do
 		
       if [ "$line_counter" -eq "$selected_line" ]
@@ -91,14 +96,17 @@ main_view () {
 	"$line_counter" "$line"					
 	selected_command="$line"
       else	
-	printf "%d::%s\n" "$line_counter" "$line"
+	printf "${yellow}%d${nc}::%s\n" "$line_counter" "$line"
      fi
 	    	
     line_counter=$(($line_counter + 1))
 	
     done < "$command_file"
-
-    printf "selected line: %d go up %s go down %s" "$selected_line"
+    
+    printf "\n${yellow}**********************************************\n"
+    printf "** Press [Up] and [Down] arrows to naviagte **\n"
+    printf "** Press the [Enter] key to run a command   **"
+    printf "\n**********************************************${nc}"
     read -n3 key
 
   done

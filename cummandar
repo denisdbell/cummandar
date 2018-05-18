@@ -1,129 +1,135 @@
 #!/bin/bash
 
-## Author: Denis Bell
-## Simple BASH program to execute stored commands. 
+## Author: denis bell
+## simple bash program to execute stored commands. 
 
 
-#File containing commands
-COMMAND_FILE=$1
+#file containing commands
+command_file=$1
 
-#Function
-FUNCTION=$2
+#function: This can be either "a" for add a command b
+#or "v" for viewing the commands in vim
+function=$2
 
-#Colours used for highlighting text
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+#colours used for highlighting text
+red='\033[0;31m'
+nc='\033[0m' # no color
 
-#Arrow up code
-ARROW_UP='\[A'
+#arrow up code
+arrow_up='\[A'
 
-#Arrow down code
-ARROW_DOWN='\[B'
+#arrow down code
+arrow_down='\[B'
 
-#Enter button code 
-ENTER=""
+#enter button code 
+enter=""
 
-SUCCESS=0
+success=0
 
-#Line counter
-LINE_COUNTER=1
+#line counter
+line_counter=1
 
-#Currenly selected line number
-SELECTED_LINE=1
+#currenly selected line number
+selected_line=1
 
-#Selected command
-SELECTED_COMMAND=""
+#selected command
+selected_command=""
 
-#Minimum line number
-MINIMUM_LINE_NUMBER=1
+#minimum line number
+minimum_line_number=1
 
-#Check if file exists
-if [ ! -f "$COMMAND_FILE" ]
-then
-	printf "The file \"%s\" does not exist" $COMMAND_FILE
+#maximum line number`
+max_line_number="$(cat "$command_file" | wc -l)"
 
-	exit 1
-fi
-
-#Maximum line number
-MAX_LINE_NUMBER=$(cat $COMMAND_FILE | wc -l)
-
+#This will display the main view which shows all the stored commands.
+#It allows the user to navigate and execute a stored command
 main_view () {
 
-	while true
-	do
+  while true
+    do
 	
-		#Check if character code detected.
-		echo -n $key | grep $ARROW_UP 
+    #check if character code detected.
+    echo -n "$key" | grep "$arrow_up" 
 	
-		if [ $? -eq $SUCCESS ]
-		then
-               		SELECTED_LINE=$(($SELECTED_LINE - 1))		
-		fi
+    if [ "$?" -eq "$success" ]
+    then
+      selected_line=$(($selected_line - 1))
+    fi
 		
-       		 #Check if character code detected.	
-		echo -n $key | grep $ARROW_DOWN 
-		if [ $? -eq $SUCCESS ]
-		then	
-			
-               		SELECTED_LINE=$(($SELECTED_LINE + 1))		
-		fi
-		
-		#If enter key is pressed
-		if [[ $key = "" ]]
-		then
-			clear	
-			bash -c "$SELECTED_COMMAND"
-		fi
-	
-		LINE_COUNTER=1
+    #check if character code detected.	
+    echo -n "$key" | grep "$arrow_down"
 
-		if [ $SELECTED_LINE -ge $MAX_LINE_NUMBER ]
-		then
+    if [ "$?" -eq "$success" ]
+    then	
+      selected_line=$(($selected_line + 1))		
+    fi
 		
-			SELECTED_LINE=$MAX_LINE_NUMBER
+    #if enter key is pressed
+    if [[ "$key" = "" ]]
+    then
+      clear	
+      bash -c "$selected_command"
+    fi
+	
+    line_counter=1
 
-		elif [ $SELECTED_LINE -lt $MINIMUM_LINE_NUMBER ]
-       	 	then		
-			SELECTED_LINE=$MINIMUM_LINE_NUMBER	
-		fi	
-			
+    if [ "$selected_line" -ge "$max_line_number" ]
+    then
+      selected_line="$max_line_number"
+    elif [ "$selected_line" -lt "$minimum_line_number" ]
+    then		
+      selected_line="$minimum_line_number"	
+    fi	
+    
+    clear
 	
-		clear
-	
-		while IFS='' read -r line || [[ -n "$line" ]]; do
+    while IFS='' read -r line || [[ -n "$line" ]]; do
 		
-			if [ $LINE_COUNTER -eq $SELECTED_LINE ]
-			then
-				printf "${RED}%d %s\n${NC}" \
-				"$LINE_COUNTER" "$line"					
-				SELECTED_COMMAND=$line
-			else	
-				printf "%d %s\n" "$LINE_COUNTER" "$line"
-	   		fi
+      if [ "$line_counter" -eq "$selected_line" ]
+      then
+	printf "${red}%d::%s\n${nc}" \
+	"$line_counter" "$line"					
+	selected_command="$line"
+      else	
+	printf "%d::%s\n" "$line_counter" "$line"
+     fi
 	    	
-			LINE_COUNTER=$(($LINE_COUNTER + 1))
+    line_counter=$(($line_counter + 1))
 	
-		done < "$COMMAND_FILE"
+    done < "$command_file"
 
-		printf "Selected line: %d Go Up %s Go Down %s" $SELECTED_LINE 
-        	read -n3 key
-	
-	done
+    printf "selected line: %d go up %s go down %s" "$selected_line"
+    read -n3 key
+
+  done
 }
 
 
-#Add command to file
-if [[ $FUNCTION = "a"  ]] && [ ! -z "$3" ] 
+#check if file exists
+if [ ! -f "$command_file" ]
 then
-        echo "$3" >> $COMMAND_FILE
+  printf "the file \"%s\" does not exist" $command_file
 
-        main_view
+  exit 1
+fi
+
+#TODO(denisdbell) - Covert below if statements to switch/case
+
+#Add command to file
+if [[ "$function" = "a"  ]] && [ ! -z "$3" ] 
+then
+  echo "$3" >> "$command_file"
+  main_view
 fi
 
 #Open in command file in vim for editing
-if [[ $FUNCTION = "v" ]]
+if [[ "$function" = "v" ]]
 then
-	vim $COMMAND_FILE		
-
+  vim "$command_file"		
 fi
+
+#Show main view if no values is passed for function
+if [[ -z  "$function" ]]
+then 
+  main_view
+fi	

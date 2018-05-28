@@ -104,7 +104,7 @@ main_view () {
     done < "$command_file"
     
     printf "\n${yellow}**********************************************\n"
-    printf "** Press [Up] and [Down] arrows to naviagte **\n"
+    printf "** Press [Up] and [Down] arrows to navigate **\n"
     printf "** Press the [Enter] key to run a command   **"
     printf "\n**********************************************${nc}"
     read -n3 key

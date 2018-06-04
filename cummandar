@@ -39,12 +39,16 @@ selected_command=""
 #minimum line number
 minimum_line_number=1
 
-#maximum line number`
-max_line_number="$(cat "$command_file" | wc -l)"
+#key
+$key = "empty"
+
 
 #This will display the main view which shows all the stored commands.
 #It allows the user to navigate and execute a stored command
 main_view () {
+
+  #Calculate maximum line number
+  max_line_number="$(cat "$command_file" | wc -l)"
 
   while true
     do
@@ -84,9 +88,9 @@ main_view () {
     
     clear
 	
-    printf "${yellow}***************************************\n"	
-    printf "******* A Total of %d Commands ********\n" "$max_line_number" 
-    printf "***************************************${nc}\n\n"
+    printf "${yellow}**********************************************\n"	
+    printf "********** A Total of %d Commands *************\n" "$max_line_number" 
+    printf "**********************************************${nc}\n\n"
     	
     while IFS='' read -r line || [[ -n "$line" ]]; do
 		
@@ -105,7 +109,7 @@ main_view () {
     
     printf "\n${yellow}**********************************************\n"
     printf "** Press [Up] and [Down] arrows to navigate **\n"
-    printf "** Press the [Enter] key to run a command   **"
+    printf "**  Press the [Enter] key to run a command  **"
     printf "\n**********************************************${nc}"
     read -n3 key
 
